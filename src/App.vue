@@ -3,13 +3,17 @@
   <v-app>
     <v-app-bar
       elevation="0"
-      style="flex: 0; display: flex; justify-content: center"
+      style="flex: 0; "
       ref="appBar"
     >
-      <v-app-bar-title>蓝鲸DAO</v-app-bar-title>
+      <v-row no-gutters class='justify-space-between'>
+        <v-icon :style="{visibility:inDetailPage?'visible':'hidden'}" @click="navigateTo('market')">mdi-arrow-left</v-icon>
+        <v-app-bar-title>蓝鲸DAO</v-app-bar-title>
+        <v-icon>mdi-dots-horizontal</v-icon>
+      </v-row>
     </v-app-bar>
     <v-main>
-      <router-view> <!-- 嵌套路由处，每一个子页面(pages中的文件)都是在这个位置处渲染-->
+      <router-view @navigatedToDetail='navigatedCallback'> <!-- 嵌套路由处，每一个子页面(pages中的文件)都是在这个位置处渲染-->
       </router-view>
     </v-main>
     <v-bottom-navigation grow dark ref='bottomBar'>
@@ -31,6 +35,7 @@ export default {
     localStorage.setItem('bottomBarHeight',bottomBarHeight)
   },
   data:()=>({
+    inDetailPage:false,
     bottomBtn: [
       {
         content: "市场",
@@ -45,10 +50,14 @@ export default {
     ]
   }),
   methods:{
+    navigatedCallback(){
+      this.inDetailPage = true;//修改inDetailPage变量的值从而让回退箭头显示在标题栏上
+    },
     navigateTo:function(key){
       //接受传入进来的按钮的key作为参数并导航至对应页面
       const {$router} = this;
-      $router.push({name:key}) //注意这里调用导航的方法时使用的是组件的命名进行的导航，不是绝对路径导航。具体组件命名可以参考router文件夹中的index.js
+      if(key === 'market') this.inDetailPage = false
+      $router.push({name:key,replace:true}) //注意这里调用导航的方法时使用的是组件的命名进行的导航，不是绝对路径导航。具体组件命名可以参考router文件夹中的index.js
     }
   }
 };

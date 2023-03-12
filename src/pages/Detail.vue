@@ -56,6 +56,7 @@ export default {
         currentTab:0
     }),
     mounted:function(){
+        this.$emit('navigatedToDetail') //告知主页面当前用户已经跳转到详情页了
         //动态计算表格应该设置的高度，预防表格过高导致元素溢出整个app屏幕
         const appBarHeight = localStorage.getItem('appBarHeight')
         const bottomBarHeight = localStorage.getItem('bottomBarHeight')

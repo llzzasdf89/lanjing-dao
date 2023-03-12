@@ -22,8 +22,8 @@
           </v-row>
           <v-row align="center">
             <v-col style="max-width:100vw;overflow:scroll">
-              <v-btn-toggle>
-                <v-btn v-for="(item,index) in tabItems" :key="index">
+              <v-btn-toggle model-value='currentTab' v-model='currentTab'>
+                <v-btn v-for="(item,index) in tabItems" :key="index" :value='item'>
                   {{item}}
 
                 </v-btn>
@@ -36,7 +36,7 @@
             <thead>
               <tr>
                 <th class="text-center">IP</th>
-                <th class="text-center">总成交额</th>
+                <th class="text-center text-no-wrap">总成交额<v-btn icon style="zoom:0.5" @click="sort"><v-icon>{{this.ascendSort?'mdi-arrow-expand-up':'mdi-arrow-expand-down'}}</v-icon></v-btn></th>
                 <th class="text-center">订单数</th>
                 <th class="text-center">最低价</th>
                 <th class="text-center">挂单率</th>
@@ -57,15 +57,16 @@
         </v-row>
       </v-container>
 </template>
-
 <script>
 export default {
     // eslint-disable-next-line vue/multi-word-component-names
     name:'Market',
     data: () => ({
+    ascendSort:true,
     selectItems: ["唯一艺术"],
     defaultSelect: "唯一艺术",
     tabItems: ["5分钟", "10分钟", "1小时", "4小时", "1天"],
+    currentTab:'5分钟',
     transactions: [
       {
         IP:"192.168.1.0",
@@ -76,49 +77,49 @@ export default {
       },
       {
         IP:"192.168.1.1",
-        totalValue:100,
+        totalValue:101,
         orderNum:20,
         minimumValue:100,
         rate:"15%"
       },
       {
         IP:"192.168.1.1",
-        totalValue:100,
+        totalValue:102,
         orderNum:20,
         minimumValue:100,
         rate:"15%"
       },
       {
         IP:"192.168.1.1",
-        totalValue:100,
+        totalValue:103,
         orderNum:20,
         minimumValue:100,
         rate:"15%"
       },
       {
         IP:"192.168.1.1",
-        totalValue:100,
+        totalValue:104,
         orderNum:20,
         minimumValue:100,
         rate:"15%"
       },
       {
         IP:"192.168.1.1",
-        totalValue:100,
+        totalValue:105,
         orderNum:20,
         minimumValue:100,
         rate:"15%"
       },
       {
         IP:"192.168.1.1",
-        totalValue:100,
+        totalValue:106,
         orderNum:20,
         minimumValue:100,
         rate:"15%"
       },
       {
         IP:"192.168.1.1",
-        totalValue:100,
+        totalValue:107,
         orderNum:20,
         minimumValue:100,
         rate:"15%"
@@ -129,6 +130,14 @@ export default {
     navigateTo:function(){
         const {$router} = this;
         $router.push({name:'detail'})
+    },
+    sort:function(){
+        this.ascendSort = !this.ascendSort
+        const {transactions,ascendSort} = this;
+        let sorted = null;
+        if(ascendSort) sorted = transactions.sort((a,b)=>a.totalValue-b.totalValue)
+        else sorted = transactions.sort((a,b)=>b.totalValue - a.totalValue)
+        this.transactions  = sorted
     }
   }
 }
