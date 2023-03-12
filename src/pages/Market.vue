@@ -43,7 +43,9 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in transactions" :key="item.name" class="text-center">
+              <tr v-for="item in transactions" :key="item.name" class="text-center"
+              @click='navigateTo'
+              >
                 <td>{{ item.IP }}</td>
                 <td>{{ item.totalValue }}</td>
                 <td>{{item.orderNum}}</td>
@@ -61,18 +63,6 @@ export default {
     // eslint-disable-next-line vue/multi-word-component-names
     name:'Market',
     data: () => ({
-    bottomBtn: [
-      {
-        content: "市场",
-        icon: "mdi-history",
-        key: 1,
-      },
-      {
-        content: "加入蓝鲸",
-        icon: "mdi-heart",
-        key: 2,
-      },
-    ],
     selectItems: ["唯一艺术"],
     defaultSelect: "唯一艺术",
     tabItems: ["5分钟", "10分钟", "1小时", "4小时", "1天"],
@@ -135,5 +125,11 @@ export default {
       }
     ],
   }),
+  methods:{
+    navigateTo:function(){
+        const {$router} = this;
+        $router.push({name:'detail'})
+    }
+  }
 }
 </script>
