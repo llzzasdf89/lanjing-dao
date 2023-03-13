@@ -7,8 +7,8 @@
       >
         <v-row style="width: 100%; display: flex; flex-direction: column">
           <v-row align="center">
-            <v-col>
-              <v-icon>mdi-history</v-icon>
+            <v-col style="display:flex;align-items:center;white-space:nowrap;font-weight:bolder">
+              <v-img src='../assets/1361678679573_.pic.jpg' max-width='100px'></v-img>
               蓝鲸DAO
             </v-col>
             <v-col>
