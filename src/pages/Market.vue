@@ -34,7 +34,7 @@
           <v-simple-table style="width: 100%; height: 100px" fixed-header>
             <thead>
               <tr>
-                <th class="text-center">IP</th>
+                <th class="text-center">品牌馆</th>
                 <th class="text-center text-no-wrap">总成交额<v-btn icon style="zoom:0.5" @click="sort"><v-icon>{{this.ascendSort?'mdi-arrow-expand-up':'mdi-arrow-expand-down'}}</v-icon></v-btn></th>
                 <th class="text-center">订单数</th>
                 <th class="text-center">最低价</th>
@@ -43,12 +43,12 @@
             </thead>
             <tbody>
               <tr v-for="item in transactions" :key="item.commodityid" class="text-center"
-              @click='navigateTo'
+              @click='navigateTo(item.commodityId,item.name)'
               >
                 <td>{{ item.name }}</td>
-                <td>{{ item.total_amt }}</td>
+                <td>{{ item.total_amt ? item.total_amt:0}}</td>
                 <td>{{item.orders}}</td>
-                <td>{{item.min_amt}}</td>
+                <td>{{item.min_amt ? item.min_amt:0}}</td>
                 <!-- <td>{{item.rate}}</td> -->
               </tr>
             </tbody>
@@ -86,8 +86,35 @@ export default {
     this.getTransactions(tabMap.get('1天')) //页面加载时默认获取1天前的交易记录
   },
   methods:{
-    navigateTo:function(){
+    navigateTo:function(commodityId,commodityName){
         const {$router} = this;
+        if(commodityId){
+          const onSaleParameter = {
+            commodityId,
+            'status': 1,
+            'cnt':10
+          }
+          const saledParameter = {
+            commodityId,
+            'status':2,
+            'cnt':10
+          }
+          const PromiseArr = [request('post','dataDetails',onSaleParameter),request('post','dataDetails',saledParameter)]
+          Promise.all(PromiseArr).then(resolve=>{
+            const onSale = JSON.parse(resolve[0]).data
+            const saled = JSON.parse(resolve[1]).data
+            localStorage.setItem('commodityId',commodityId) //将商品的id缓存起来，这一点很重要，如果用户在想在页面刷新的话没有这个缓存那么页面会变空白
+            localStorage.setItem('commodityName',commodityName)
+            $router.push({name:'detail',params:{
+              onSale,
+              saled,
+              commodityName
+            }})
+          }).catch(err=>{
+            console.error('查询在售商品，交易订单错误，错误为',err)
+          })
+          return 
+        }
         $router.push({name:'detail'})
     },
     sort:function(){
@@ -114,7 +141,7 @@ export default {
           startDate,
           endDate
         }
-        request('post','/api/bwt/theOne/data',parameter).then(resolve=>{
+        request('post','data',parameter).then(resolve=>{
           this.transactions = JSON.parse(resolve).data
           this.ascendSort = true //由于每次切换tab默认数据都是按照降序排序，因此这里要将ascendSort这个flag给默认设置为true
           this.sort()
