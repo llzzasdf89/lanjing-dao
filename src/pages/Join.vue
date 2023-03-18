@@ -11,12 +11,20 @@
            </v-col>
         <v-col class="word-break title"> 进入DODO，获取实时通知 </v-col>
         <v-row align="center">
-          <v-col>
+          <v-col cols='12'><v-btn block href="https://mp.weixin.qq.com/mp/profile_ext?action=home&__biz=MzkwMjQyNDU5NQ==&scene=117#wechat_redirect" outlined rounded>
+          点击访问蓝鲸公众号
+    </v-btn></v-col>
+          <v-col cols='12'>
+            <v-btn block href="https://imdodo.com/s/136488?inv=UVIA" outlined rounded>
+          点击进入DODO群
+    </v-btn>
+          </v-col>
+          <v-col cols='6'>
               <v-img
             src="../assets/4541679124743_.pic.jpg"
             max-width='150px'></v-img>
           </v-col>
-          <v-col>
+          <v-col cols='6'>
               <v-img
             src="../assets/4471679124584_.pic.jpg"
             max-width='150px'></v-img>
