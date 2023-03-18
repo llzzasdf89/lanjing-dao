@@ -4,7 +4,7 @@
     <v-row style="width:100%" ref='top'>
         <v-col cosl='6' class='d-flex flex-column' align-self="center">
             
-            商品名称:<span style="font-weight:bolder">{{this.commodityName}}</span>
+            品牌馆:<span style="font-weight:bolder">{{commodityName}}</span>
         </v-col>
         <v-col class="d-flex justify-end align-center" cols='6' style="font-weight:bolder">
                 <v-img src='../assets/1361678679573_.pic.jpg' max-width='64px'>
@@ -24,11 +24,11 @@
     </v-row>
     <v-row style="width:100%">
         <v-col v-if="(onSale.length === 0 && currentTab===0)|| (saled.length === 0 && currentTab===1)">Woops!这里还什么都没有呢</v-col>
-        <v-simple-table :style="{width:'100%',overflow:'scroll',height:this.height + 'px'}">
+        <v-simple-table :style="{width:'100%',overflow:'scroll',height:this.height + 'px'}" v-else>
             <thead>
               <tr>
                 <th></th>
-                <th class="text-center">IP</th>
+                <th class="text-center">商品名称</th>
                 <th class="text-center">{{currentTab === 0?'价格':'成交时间'}}</th>
                 <th v-show='currentTab === 1'>成交价格</th>
                 <th></th>
@@ -77,54 +77,58 @@
 import {request} from '../utils/ajax'
 export default {
     data:()=>({
-        height:200,
         currentTab:0,
-        onSale:null,
-        saled:null,
-        commodityName:''
+        onSale:[],
+        saled:[]
     }),
-    methods:{
-        navigateToJoinPage:function(){
-            this.$emit('DetailToJoin')
+    computed:{
+        height:function(){
+            //动态计算表格应该设置的高度，预防表格过高导致元素溢出整个app屏幕
+            const appBarHeight = localStorage.getItem('appBarHeight')
+            const bottomBarHeight = localStorage.getItem('bottomBarHeight')
+            if(!appBarHeight || !bottomBarHeight) return 200; //如果缓存中不存在获取到的app状态栏高度以及底部状态栏高度那么我们直接返回，相当于使用默认值200px
+            const {innerHeight} = window
+            const {clientHeight} = this.$refs.top
+            const tableHeight = innerHeight - clientHeight - appBarHeight - bottomBarHeight - 200 //表格的高度就是使用视口的高度减去顶部状态栏、底部状态栏以及tab区域（包含头像）以后的高度。注意后面又多减去了200个像素是为了给“立即加入”按钮所预留的高度
+            return tableHeight
+        },
+        commodityName:function(){
+            const commodityName =localStorage.getItem('commodityName')
+            return commodityName?commodityName:''
         }
     },
-    watch:{
-        onSale:function(newV){
-            if(!newV){
-                const commodityId = localStorage.getItem('commodityId') //取出缓存，与Market页面的设置缓存相互呼应。这是因为Vue在刷新页面的时候整个组件的数据都会刷新，唯有将这个属性持久化才能保证数据不丢失
-                const commodityName = localStorage.getItem('commodityName')
-                this.commodityName = commodityName
-                const that = this
-                const promiseArr = [request('post','dataDetails',{
-                    commodityId,
-                    'status':1,
-                    'cnt':10
-                }),request('post','dataDetails',{
-                commodityId,
-                'status':2,
-                'cnt':10
-                    })]
-                Promise.all(promiseArr).then(resolve=>{
-                that.onSale = JSON.parse(resolve[0]).data;
-                that.saled = JSON.parse(resolve[1]).data;
-        }).catch(err=> console.error('错误',err))
-            }
+    methods:{
+        navigateToJoinPage:function(){
+            const {$router} = this
+            $router.push({'name':'join'})
+        },
+        getCommodities:function(commodityId){
+            const onSaleParameter = {
+            commodityId,
+            'status': 1,
+            'cnt':10
+          }
+          const saledParameter = {
+            commodityId,
+            'status':2,
+            'cnt':10
+          }
+        const PromiseArr = [request('post','dataDetails',onSaleParameter),request('post','dataDetails',saledParameter)]  
+        return Promise.all(PromiseArr)
         }
     },
     mounted:function(){
-        this.$emit('navigatedToDetail') //告知主页面当前用户已经跳转到详情页了
-        //动态计算表格应该设置的高度，预防表格过高导致元素溢出整个app屏幕
-        const {onSale,saled,commodityName}  = this.$route.params
-        this.commodityName = commodityName
-        this.onSale = onSale
-        this.saled = saled;
-        const appBarHeight = localStorage.getItem('appBarHeight')
-        const bottomBarHeight = localStorage.getItem('bottomBarHeight')
-        if(!appBarHeight && !bottomBarHeight) return; //如果缓存中不存在获取到的app状态栏高度以及底部状态栏高度那么我们直接返回，相当于使用默认值200px
-        const {innerHeight} = window
-        const {clientHeight} = this.$refs.top
-        const tableHeight = innerHeight - clientHeight - appBarHeight - bottomBarHeight - 200 //表格的高度就是使用视口的高度减去顶部状态栏、底部状态栏以及tab区域（包含头像）以后的高度。注意后面又多减去了200个像素是为了给“立即加入”按钮所预留的高度
-        this.height = tableHeight
+        const {commodityId}  = this.$route.params
+        const that = this 
+        this.getCommodities(commodityId).then(resolve=>{
+            const onSale = JSON.parse(resolve[0]).data
+            const saled = JSON.parse(resolve[1]).data
+            that.onSale = onSale;
+            that.saled = saled
+            localStorage.setItem('commodityId',commodityId) //将商品的id缓存起来，这一点很重要，如果用户在想在页面刷新的话没有这个缓存那么页面会变空白
+        }).catch(err=>{
+                    console.error('获取商品详情错误',err)
+                })
     }
 }
 </script>

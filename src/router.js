@@ -20,7 +20,7 @@ const routes = [
     component:Join
   },
   {
-    path:'/detail',
+    path:'/detail/:commodityId',
     name:'detail',
     component:Detail
   }

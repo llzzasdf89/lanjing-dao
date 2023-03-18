@@ -7,16 +7,16 @@
       ref="appBar"
     >
       <v-row no-gutters class='justify-space-between'>
-        <v-icon :style="{visibility:inDetailPage?'visible':'hidden'}" @click="navigateTo('market')">mdi-arrow-left</v-icon>
+        <v-icon :style="{visibility:inMarketPage?'hidden':'visible'}" @click="()=>{this.$router.go(-1)}">mdi-arrow-left</v-icon>
         <v-app-bar-title>蓝鲸DAO</v-app-bar-title>
         <v-icon>mdi-dots-horizontal</v-icon>
       </v-row>
     </v-app-bar>
     <v-main>
-      <router-view @navigatedToDetail='navigatedCallback' @DetailToJoin='DetailToJoinCallback'> <!-- 嵌套路由处，每一个子页面(pages中的文件)都是在这个位置处渲染,绑定的方法都是回调函数，由各个不同的子页面触发-->
+      <router-view> <!-- 嵌套路由处，每一个子页面(pages中的文件)都是在这个位置处渲染,绑定的方法都是回调函数，由各个不同的子页面触发-->
       </router-view>
     </v-main>
-    <v-bottom-navigation grow dark ref='bottomBar' mandatory v-model='currentTab'>
+    <v-bottom-navigation grow dark ref='bottomBar' mandatory :value='currentTab'>
       <v-btn v-for="item in bottomBtn" :key="item.key" height="100%" @click='navigateTo(item.key)' :value='item.key'>
         {{ item.content }}
         <v-icon> {{ item.icon }}</v-icon>
@@ -34,9 +34,19 @@ export default {
     localStorage.setItem('appBarHeight',appBarHeight)
     localStorage.setItem('bottomBarHeight',bottomBarHeight)
   },
+  computed:{
+    currentTab:function(){
+      const {name} = this.$route
+      if(name === 'detail') return 'market'
+      return name
+    },
+    inMarketPage:function(){
+      const {name} = this.$route
+      if(name === 'market') return true
+      return false
+    }
+  },
   data:()=>({
-    inDetailPage:false,
-    currentTab:"market",
     bottomBtn: [
       {
         content: "市场",
@@ -51,20 +61,12 @@ export default {
     ]
   }),
   methods:{
-    navigatedCallback(){
-      this.inDetailPage = true;//修改inDetailPage变量的值从而让回退箭头显示在标题栏上
-    },
     DetailToJoinCallback(){
       this.navigateTo('join')
     },
     navigateTo:function(key){
-      //接受传入进来的按钮的key作为参数并导航至对应页面
-      const currentRouteName = this.$router.currentRoute.name
-      if(this.currentTab === key && currentRouteName !=='detail') return //如果用户多次点击原页面，那么我们直接不理会此次跳转。避免过多的路由跳转造成内存堆积
-      const {$router} = this
-      this.currentTab = key //同步更新底部导航栏的值，从而使得底部导航栏的图标能够同步跟着用户的跳转操作而高亮
-      if(key === 'market') this.inDetailPage = false
-      $router.push({name:key,replace:true}) //注意这里调用导航的方法时使用的是组件的命名进行的导航，不是绝对路径导航。具体组件命名可以参考router文件夹中的index.js
+        const {$router} = this
+        $router.push({name:key})
     }
   }
 };

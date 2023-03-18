@@ -43,7 +43,7 @@
             </thead>
             <tbody>
               <tr v-for="item in transactions" :key="item.commodityid" class="text-center"
-              @click='navigateTo(item.commodityId,item.name)'
+              @click='navigateToDetail(item.commodityId,item.name)'
               >
                 <td>{{ item.name }}</td>
                 <td>{{ item.total_amt ? item.total_amt:0}}</td>
@@ -86,36 +86,10 @@ export default {
     this.getTransactions(tabMap.get('1天')) //页面加载时默认获取1天前的交易记录
   },
   methods:{
-    navigateTo:function(commodityId,commodityName){
+    navigateToDetail:function(commodityId,commodityName){
         const {$router} = this;
-        if(commodityId){
-          const onSaleParameter = {
-            commodityId,
-            'status': 1,
-            'cnt':10
-          }
-          const saledParameter = {
-            commodityId,
-            'status':2,
-            'cnt':10
-          }
-          const PromiseArr = [request('post','dataDetails',onSaleParameter),request('post','dataDetails',saledParameter)]
-          Promise.all(PromiseArr).then(resolve=>{
-            const onSale = JSON.parse(resolve[0]).data
-            const saled = JSON.parse(resolve[1]).data
-            localStorage.setItem('commodityId',commodityId) //将商品的id缓存起来，这一点很重要，如果用户在想在页面刷新的话没有这个缓存那么页面会变空白
-            localStorage.setItem('commodityName',commodityName)
-            $router.push({name:'detail',params:{
-              onSale,
-              saled,
-              commodityName
-            }})
-          }).catch(err=>{
-            console.error('查询在售商品，交易订单错误，错误为',err)
-          })
-          return 
-        }
-        $router.push({name:'detail'})
+        $router.push({name:'detail',params:{commodityId}})
+        localStorage.setItem('commodityName',commodityName)
     },
     sort:function(){
         this.ascendSort = !this.ascendSort
