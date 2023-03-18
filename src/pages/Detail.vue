@@ -24,7 +24,7 @@
     </v-row>
     <v-row style="width:100%">
         <v-col v-if="(onSale.length === 0 && currentTab===0)|| (saled.length === 0 && currentTab===1)">Woops!这里还什么都没有呢</v-col>
-        <v-simple-table :style="{width:'100%',overflow:'scroll',height:this.height + 'px'}" v-else>
+        <v-simple-table :style="{width:'100%',overflow:'scroll',height:height + 'px'}" v-else>
             <thead>
               <tr>
                 <th></th>
@@ -39,7 +39,7 @@
                     <td>
                         <v-img :src="item.cover" max-height='40px' max-width="40px"></v-img>
                     </td>
-                    <td class='text-center'>
+                    <td class='text-center' style="white-space:nowrap">
                         {{item.name}}
                         </td>
                     <td class='text-center'>{{item.price + '¥'}}</td>
@@ -49,27 +49,15 @@
                 </tr>
                 <tr v-for='item in saled' :key='item.id' v-show='currentTab===1 && saled.length > 0'>
                         <td><v-img :src="item.cover" max-width='40px'></v-img></td>
-                        <td class='text-center'>{{item.name}}</td>
+                        <td class='text-center' style="white-space:nowrap">{{item.name}}</td>
                         <td class='text-center'>{{new Date(item.saleTime).toLocaleString()}}</td>
                         <td class='text-center'>{{item.price + '¥'}}</td>
                         <td class='text-center'>
-                        <v-btn variant="tonal" elevation="0" :href="'https://www.theone.art/goods/'+ item.goodsId">查看详情</v-btn>
+                        <v-btn variant="tonal" elevation="0" :href="'https://www.theone.art/goods/'+ item.goodsId">详情</v-btn>
                     </td>
                 </tr>
             </tbody>
         </v-simple-table>
-    </v-row>
-    <v-row style="width:100%;height:198px;" align-content="center">
-        <v-col class='d-flex justify-center '>
-           <v-tooltip top>
-            <template v-slot:activator="{ on, attrs }">
-                <v-btn v-on='on' v-bind='attrs' @click="navigateToJoinPage">
-                        加入我们
-                </v-btn>
-            </template>
-                <span>加入社群，消息推送实时数据</span>
-  </v-tooltip>
-        </v-col>
     </v-row>
 </v-container>
 </template>
@@ -89,7 +77,7 @@ export default {
             if(!appBarHeight || !bottomBarHeight) return 200; //如果缓存中不存在获取到的app状态栏高度以及底部状态栏高度那么我们直接返回，相当于使用默认值200px
             const {innerHeight} = window
             const {clientHeight} = this.$refs.top
-            const tableHeight = innerHeight - clientHeight - appBarHeight - bottomBarHeight - 200 //表格的高度就是使用视口的高度减去顶部状态栏、底部状态栏以及tab区域（包含头像）以后的高度。注意后面又多减去了200个像素是为了给“立即加入”按钮所预留的高度
+            const tableHeight = innerHeight - clientHeight - appBarHeight - bottomBarHeight//表格的高度就是使用视口的高度减去顶部状态栏、底部状态栏以及tab区域（包含头像）以后的高度。
             return tableHeight
         },
         commodityName:function(){
@@ -98,10 +86,6 @@ export default {
         }
     },
     methods:{
-        navigateToJoinPage:function(){
-            const {$router} = this
-            $router.push({'name':'join'})
-        },
         getCommodities:function(commodityId){
             const onSaleParameter = {
             commodityId,

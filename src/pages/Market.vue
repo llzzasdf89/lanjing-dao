@@ -63,15 +63,15 @@ const tabMap = new Map([
   ['10分钟',600],
   ['1小时',3600],
   ['4小时',14400],
-  ['1天',86400]
+  ['今日',86400]
 ]) //负责映射每一个tab对应的秒数
 export default {
     data: () => ({
     ascendSort:true,
     selectItems: ["唯一艺术"],
     defaultSelect: "唯一艺术",
-    tabItems: ["5分钟", "10分钟", "1小时", "4小时", "1天"],
-    currentTab:'1天',
+    tabItems: ["5分钟", "10分钟", "1小时", "4小时", "今日"],
+    currentTab:'今日',
     clientHeight:0,
     scrollHeight:0,
     transactions: []
@@ -83,7 +83,7 @@ export default {
     }
   },
   mounted:function(){
-    this.getTransactions(tabMap.get('1天')) //页面加载时默认获取1天前的交易记录
+    this.getTransactions(tabMap.get('今日')) //页面加载时默认获取1天前的交易记录
   },
   methods:{
     navigateToDetail:function(commodityId,commodityName){
@@ -109,7 +109,7 @@ export default {
     // },
     getTransactions:function(tabItemInSeconds){
         //接收传入的tab所对应的秒数，例如‘5分钟’对应300秒，然后请求API获取对应数据
-        const endDate = Date.now() //当前的时间戳，是以毫秒为单位
+        const endDate = this.currentTab==='今日'?new Date(new Date().toDateString()).getTime():Date.now() //当前的时间戳，是以毫秒为单位。若用户选择的今日，那固定值为今日的0:00
         const startDate = endDate - tabItemInSeconds * 1000 //用当前的毫秒数减去tab所表示的毫秒数，就是查询多少分钟前的交易记录
         const parameter = {
           startDate,
