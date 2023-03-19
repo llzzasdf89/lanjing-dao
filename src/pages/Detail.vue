@@ -42,7 +42,7 @@
                     <td class='text-center' style="white-space:nowrap">
                         {{item.name}}
                         </td>
-                    <td class='text-center'>{{item.price + '¥'}}</td>
+                    <td class='text-center'>{{'¥' + item.price}}</td>
                     <td class='text-center'>
                         <v-btn variant="tonal" elevation="0" :href="'https://www.theone.art/goods/'+ item.goodsId">购买</v-btn>
                     </td>
@@ -51,7 +51,7 @@
                         <td><v-img :src="item.cover" max-width='40px'></v-img></td>
                         <td class='text-center' style="white-space:nowrap">{{item.name}}</td>
                         <td class='text-center'>{{dateFormat(new Date(item.saleTime),'yyyy/MM/dd hh:mm:ss')}}</td>
-                        <td class='text-center'>{{item.price + '¥'}}</td>
+                        <td class='text-center'>{{'¥' + item.price}}</td>
                         <td class='text-center'>
                         <v-btn variant="tonal" elevation="0" :href="'https://www.theone.art/goods/'+ item.goodsId">详情</v-btn>
                     </td>
@@ -59,7 +59,7 @@
             </tbody>
         </v-simple-table>
         <v-col style="display:flex;justify-content:center">
-            <v-progress-circular indeterminate v-if="(currentTab===0 && loading && onSale.length >= 20) || (currentTab===1 && loading && saled.length >= 20)" style="white-space:nowrap">加载中</v-progress-circular>
+            <v-progress-circular indeterminate v-if="!approachEnd" style="white-space:nowrap">加载中</v-progress-circular>
             <div v-else>我也是有底线的~</div>
         </v-col>
     </v-row>
@@ -74,19 +74,17 @@ export default {
         onSale:[],
         saled:[],
         height:0,
-        loading:true,
+        approachEnd:false,
         onSalemaxId:0,
-        saledmaxId:0
+        saledmaxId:0,
+        commodityName:''
     }),
-    computed:{
-        commodityName:function(){
-            const commodityName =localStorage.getItem('commodityName')
-            return commodityName?commodityName:''
-        }
-    },
     methods:{
         scrollToTop:function(){
             const {table} = this.$refs
+            if(this.currentTab === 0 && this.saledmaxId === null) this.approachEnd = true
+            else if (this.currentTab === 1 && this.onSalemaxId === null) this.approachEnd = true;
+            else this.approachEnd = false;
             table.scrollTop = 0;
         },
         scrollTable:function(e){
@@ -100,7 +98,6 @@ export default {
             const {scrollTop,scrollHeight,clientHeight} = e.target
             if(scrollTop + clientHeight === scrollHeight){
                 if(this.currentTab === 0 && this.onSalemaxId !== null){
-                    this.loading = true
                     const commodityId = localStorage.getItem('commodityId')
                     const that = this
                     const onSaleParameter = {
@@ -112,26 +109,15 @@ export default {
                     request('post','dataDetails',onSaleParameter).then(resolve=>{
                         const {datas,maxId} = JSON.parse(resolve).data
                         that.onSalemaxId = maxId
-                        if(maxId === null) this.loading = false
-                        const arr = []
-                        for(let i = 0; i < datas.length;i++){
-                            let flag = false;
-                            for(let j = 0; j < that.onSale.length; j++){
-                                if(that.onSale[j].id === datas[i].id) {
-                                    flag = true ;
-                                    break;
-                                }
-                            }
-                            if(flag) continue;
-                            arr.push(datas[i])
-                        }
-                        setTimeout(()=>that.onSale = that.onSale.concat(arr),500)
+                        if(maxId === null) that.approachEnd = true
+                        //筛选出不重复的交易
+                        const arr =  datas.filter((item)=>that.onSale.every((i)=> i.id !== item.id))
+                        that.onSale = that.onSale.concat(arr)
                     }).catch(err=>{
                         console.error(err)
                     })
                 }
                 else if(this.currentTab === 1 && this.saledmaxId !== null){
-                    this.loading = true
                     const commodityId = localStorage.getItem('commodityId')
                     const that = this
                     const saledParameter = {
@@ -142,21 +128,10 @@ export default {
                         }
                     request('post','dataDetails',saledParameter).then(resolve=>{
                         const {datas,maxId} = JSON.parse(resolve).data
-                        if(maxId === null) this.loading = false
+                        if(maxId === null) that.approachEnd = true
                         that.saledmaxId = maxId
-                        const arr = []
-                        for(let i = 0; i < datas.length;i++){
-                            let flag = false;
-                            for(let j = 0; j < that.onSale.length; j++){
-                                if(that.saled[j].id === datas[i].id) {
-                                    flag = true ;
-                                    break;
-                                }
-                            }
-                            if(flag) continue;
-                            arr.push(datas[i])
-                        }
-                        setTimeout(()=>that.saled = that.saled.concat(arr),500)
+                        const arr =  datas.filter((item)=>that.saled.every((i)=> i.id !== item.id))
+                        that.saled = that.saled.concat(arr)
                     }).catch(err=>{
                         console.error(err)
                     })
@@ -179,7 +154,7 @@ export default {
             'cnt':20,
             'maxId':this.saledmaxId
           }
-        const PromiseArr = [request('post','dataDetails',onSaleParameter),request('post','dataDetails',saledParameter)]  
+        const PromiseArr = [request('post','dataDetails',onSaleParameter),request('post','dataDetails',saledParameter),request('post','getCommodity',{commodityId})]
         return Promise.all(PromiseArr)
         },
         dateFormat
@@ -192,17 +167,19 @@ export default {
             const saled = JSON.parse(resolve[1]).data.datas
             const onSaleMaxId = JSON.parse(resolve[0]).data.maxId
             const saledmaxId = JSON.parse(resolve[1]).data.maxId
+            const commodityName = JSON.parse(resolve[2]).data.name;
+            that.commodityName = commodityName
             that.onSalemaxId = onSaleMaxId
             that.saledmaxId = saledmaxId
             that.onSale = onSale;
             that.saled = saled
             localStorage.setItem('commodityId',commodityId) //将商品的id缓存起来，这一点很重要，如果用户在想在页面刷新的话没有这个缓存那么页面会变空白
-            const appBarHeight = localStorage.getItem('appBarHeight')
+            // const appBarHeight = localStorage.getItem('appBarHeight')
             const bottomBarHeight = localStorage.getItem('bottomBarHeight')
-            if(!appBarHeight || !bottomBarHeight) return 200; //如果缓存中不存在获取到的app状态栏高度以及底部状态栏高度那么我们直接返回，相当于使用默认值200px
+            if(!bottomBarHeight) return 200; //如果缓存中不存在获取到的app状态栏高度以及底部状态栏高度那么我们直接返回，相当于使用默认值200px
             const {innerHeight} = window
             const {clientHeight} = this.$refs.top
-            const tableHeight = innerHeight - clientHeight - appBarHeight - bottomBarHeight//表格的高度就是使用视口的高度减去顶部状态栏、底部状态栏以及tab区域（包含头像）以后的高度。
+            const tableHeight = innerHeight - clientHeight - bottomBarHeight//表格的高度就是使用视口的高度减去顶部状态栏、底部状态栏以及tab区域（包含头像）以后的高度。
             this.height = tableHeight
         }).catch(err=>{
                     console.error('获取商品详情错误',err)

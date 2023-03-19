@@ -5,13 +5,13 @@
         fill-height
         class="align-center flex-column flex-nowrap"
       >
-        <v-row style="width: 100%; display: flex; flex-direction: column">
-          <v-row align="center">
-            <v-col style="display:flex;align-items:center;white-space:nowrap;font-weight:bolder">
+        <v-container class='pb-0'>
+          <v-row class='d-flex align-center' no-gutters>
+            <v-col cols='6' style="display:flex;align-items:center;white-space:nowrap;font-weight:bolder">
               <v-img src='../assets/1361678679573_.pic.jpg' max-width='100px'></v-img>
-              蓝鲸DAO
+              <span style="overflow:hidden; text-overflow:ellipsis">蓝鲸DAO</span>
             </v-col>
-            <v-col>
+            <v-col cols='6'>
               <v-select
                 label="选择一个数据来源"
                 :items="selectItems"
@@ -20,20 +20,20 @@
               </v-select>
             </v-col>
           </v-row>
-          <v-row align="center">
-            <v-col style="max-width:100vw;overflow:scroll">
+          <v-row class='ma-0 pb-0'>
+            <v-col style="max-width:100vw;overflow:scroll" class='pb-0'>
               <v-btn-toggle model-value='currentTab' v-model='currentTab' mandatory>
-                <v-btn v-for="(item,index) in tabItems" :key="index" :value='item'>
+                <v-btn v-for="(item,index) in tabItems" :key="index" :value='item' small>
                   {{item}}
                 </v-btn>
               </v-btn-toggle>
             </v-col>
           </v-row>
-        </v-row>
-        <v-row style="width: 100%; overflow: scroll">
+        </v-container>
+        <v-container style="width: 100%; overflow: scroll;height:100%;padding-top:0">
           <v-simple-table style="width: 100%; height: 100px" fixed-header>
             <thead>
-              <tr>
+              <tr style='white-space:nowrap'>
                 <th class="text-center">品牌馆</th>
                 <th class="text-center text-no-wrap">总成交额<v-btn icon style="zoom:0.5" @click="sort"><v-icon>{{this.ascendSort?'mdi-arrow-expand-up':'mdi-arrow-expand-down'}}</v-icon></v-btn></th>
                 <th class="text-center">订单数</th>
@@ -46,14 +46,14 @@
               @click='navigateToDetail(item.commodityId,item.name)'
               >
                 <td>{{ item.name }}</td>
-                <td>{{ item.total_amt ? item.total_amt:0}}</td>
+                <td>{{ item.total_amt ?'¥'+ item.total_amt:'¥'+ 0}}</td>
                 <td>{{item.orders}}</td>
-                <td>{{item.min_amt ? item.min_amt:0}}</td>
+                <td>{{item.min_amt ? '¥' + item.min_amt:'¥' + 0}}</td>
                 <!-- <td>{{item.rate}}</td> -->
               </tr>
             </tbody>
           </v-simple-table>
-        </v-row>
+        </v-container>
       </v-container>
 </template>
 <script>
@@ -86,10 +86,9 @@ export default {
     this.getTransactions(tabMap.get('今日')) //页面加载时默认获取1天前的交易记录
   },
   methods:{
-    navigateToDetail:function(commodityId,commodityName){
+    navigateToDetail:function(commodityId){
         const {$router} = this;
         $router.push({name:'detail',params:{commodityId}})
-        localStorage.setItem('commodityName',commodityName)
     },
     sort:function(){
         this.ascendSort = !this.ascendSort
@@ -109,7 +108,7 @@ export default {
     // },
     getTransactions:function(tabItemInSeconds){
         //接收传入的tab所对应的秒数，例如‘5分钟’对应300秒，然后请求API获取对应数据
-        const endDate = this.currentTab==='今日'?new Date(new Date().toDateString()).getTime():Date.now() //当前的时间戳，是以毫秒为单位。若用户选择的今日，那固定值为今日的0:00
+        const endDate = this.currentTab==='今日'?new Date(new Date().toLocaleDateString()).getTime() + 86400000:Date.now() //当前的时间戳，是以毫秒为单位。若用户选择的今日，那固定值为今日的0:00
         const startDate = endDate - tabItemInSeconds * 1000 //用当前的毫秒数减去tab所表示的毫秒数，就是查询多少分钟前的交易记录
         const parameter = {
           startDate,

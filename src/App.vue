@@ -1,7 +1,7 @@
 <!-- App.vue 是整个App的入口处，内部代码包含整个app的布局以及导航栏和状态栏的逻辑-->
 <template>
   <v-app>
-    <v-app-bar
+    <!-- <v-app-bar
       elevation="0"
       style="flex: 0; "
       ref="appBar"
@@ -11,12 +11,12 @@
         <v-app-bar-title>蓝鲸DAO</v-app-bar-title>
         <v-icon>mdi-dots-horizontal</v-icon>
       </v-row>
-    </v-app-bar>
+    </v-app-bar> -->
     <v-main>
       <router-view> <!-- 嵌套路由处，每一个子页面(pages中的文件)都是在这个位置处渲染,绑定的方法都是回调函数，由各个不同的子页面触发-->
       </router-view>
     </v-main>
-    <v-bottom-navigation grow dark ref='bottomBar' mandatory :value='currentTab'>
+    <v-bottom-navigation grow dark ref='bottomBar' mandatory :value='currentTab' fixed>
       <v-btn v-for="item in bottomBtn" :key="item.key" height="100%" @click='navigateTo(item.key)' :value='item.key'>
         {{ item.content }}
         <v-icon> {{ item.icon }}</v-icon>
@@ -28,10 +28,10 @@
 export default {
   name: "App",
   mounted:function(){
-    const {appBar,bottomBar} = this.$refs;
-    const appBarHeight = appBar.computedContentHeight
+    const {bottomBar} = this.$refs;
+    // const appBarHeight = appBar.computedContentHeight
     const bottomBarHeight = bottomBar.height
-    localStorage.setItem('appBarHeight',appBarHeight)
+    // localStorage.setItem('appBarHeight',appBarHeight)
     localStorage.setItem('bottomBarHeight',bottomBarHeight)
   },
   computed:{
