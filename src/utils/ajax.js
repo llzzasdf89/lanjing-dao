@@ -1,4 +1,4 @@
-const defaultAPIDomain = 'http://api.nftbwc.com/api/bwt/theOne/' //默认的API访问域名
+const defaultAPIDomain = 'https://api.nftbwc.com/api/bwt/theOne/' //默认的API访问域名
 const request = function(method = 'get',api,parameter){
     const url = defaultAPIDomain + api
     return new Promise ((resolve,reject)=>{
