@@ -58,7 +58,7 @@
                 </tr>
             </tbody>
         </v-simple-table>
-        <v-col style="display:flex;justify-content:center">
+        <v-col style="display:flex;justify-content:center" v-show='(onSale.length >= 20 && currentTab===0) ||  (saled.length >=20 && currentTab===1)'>
             <v-progress-circular indeterminate v-if="!approachEnd" style="white-space:nowrap">加载中</v-progress-circular>
             <div v-else>我也是有底线的~</div>
         </v-col>
@@ -97,16 +97,18 @@ export default {
 
             const {scrollTop,scrollHeight,clientHeight} = e.target
             if(scrollTop + clientHeight === scrollHeight){
+                const params = {
+                    commodityId:'0',
+                    status:'1',
+                    'cnt':20,
+                    maxId:0
+                }
                 if(this.currentTab === 0 && this.onSalemaxId !== null){
                     const commodityId = localStorage.getItem('commodityId')
                     const that = this
-                    const onSaleParameter = {
-                        commodityId,
-                        'status': 1,
-                        'cnt':20,
-                        'maxId':this.onSalemaxId
-                        }
-                    request('post','dataDetails',onSaleParameter).then(resolve=>{
+                    params.commodityId = commodityId;
+                    params.maxId = this.onSalemaxId
+                    request('post','dataDetails',params).then(resolve=>{
                         const {datas,maxId} = JSON.parse(resolve).data
                         that.onSalemaxId = maxId
                         if(maxId === null) that.approachEnd = true
@@ -120,13 +122,10 @@ export default {
                 else if(this.currentTab === 1 && this.saledmaxId !== null){
                     const commodityId = localStorage.getItem('commodityId')
                     const that = this
-                    const saledParameter = {
-                        commodityId,
-                        'status':2,
-                        'cnt':20,
-                        'maxId':this.saledmaxId
-                        }
-                    request('post','dataDetails',saledParameter).then(resolve=>{
+                    params.commodityId = commodityId
+                    params.maxId = this.saledmaxId;
+                    params.status = '2'
+                    request('post','dataDetails',params).then(resolve=>{
                         const {datas,maxId} = JSON.parse(resolve).data
                         if(maxId === null) that.approachEnd = true
                         that.saledmaxId = maxId
@@ -178,9 +177,9 @@ export default {
             const bottomBarHeight = localStorage.getItem('bottomBarHeight')
             if(!bottomBarHeight) return 200; //如果缓存中不存在获取到的app状态栏高度以及底部状态栏高度那么我们直接返回，相当于使用默认值200px
             const {innerHeight} = window
-            const {clientHeight} = this.$refs.top
+            const {clientHeight} = that.$refs.top
             const tableHeight = innerHeight - clientHeight - bottomBarHeight//表格的高度就是使用视口的高度减去顶部状态栏、底部状态栏以及tab区域（包含头像）以后的高度。
-            this.height = tableHeight
+            that.height = tableHeight
         }).catch(err=>{
                     console.error('获取商品详情错误',err)
                 })

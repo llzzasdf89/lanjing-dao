@@ -5,7 +5,7 @@
         fill-height
         class="align-center flex-column flex-nowrap"
       >
-        <v-container class='pb-0'>
+        <v-container class='pb-0' ref='topArea'>
           <v-row class='d-flex align-center' no-gutters>
             <v-col cols='6' style="display:flex;align-items:center;white-space:nowrap;font-weight:bolder">
               <v-img src='../assets/1361678679573_.pic.jpg' max-width='100px'></v-img>
@@ -30,8 +30,8 @@
             </v-col>
           </v-row>
         </v-container>
-        <v-container style="width: 100%; overflow: scroll;height:100%;padding-top:0">
-          <v-simple-table style="width: 100%; height: 100px" fixed-header>
+        <v-container :style="{width: '100%', overflow: 'scroll', maxHeight:tableHeight + 'px', 'padding-top':0}">
+          <v-simple-table style="width: 100%;" fixed-header >
             <thead>
               <tr style='white-space:nowrap'>
                 <th class="text-center">品牌馆</th>
@@ -73,8 +73,8 @@ export default {
     tabItems: ["5分钟", "10分钟", "1小时", "4小时", "今日"],
     currentTab:'今日',
     clientHeight:0,
-    scrollHeight:0,
-    transactions: []
+    transactions: [],
+    tableHeight:300,
   }),
   watch:{
     //侦测每一次的tab变动，一旦触发即向后端发送API请求
@@ -98,14 +98,6 @@ export default {
         else sorted = transactions.sort((a,b)=>b.total_amt - a.total_amt)
         this.transactions  = sorted
     },
-    // tableScroll:function(e){
-    // 分页功能，待完成
-    //   const {scrollTop} = e.target;
-    //   console.log(this.clientHeight,scrollTop,this.scrollHeight)
-    //   if(scrollTop + this.clientHeight >= this.scrollHeight){
-    //     console.log('trigger')
-    //   }
-    // },
     getTransactions:function(tabItemInSeconds){
         //接收传入的tab所对应的秒数，例如‘5分钟’对应300秒，然后请求API获取对应数据
         const endDate = this.currentTab==='今日'?new Date(new Date().toLocaleDateString()).getTime() + 86400000:Date.now() //当前的时间戳，是以毫秒为单位。若用户选择的今日，那固定值为今日的0:00
@@ -114,10 +106,14 @@ export default {
           startDate,
           endDate
         }
+        const that = this
         request('post','data',parameter).then(resolve=>{
-          this.transactions = JSON.parse(resolve).data
-          this.ascendSort = true //由于每次切换tab默认数据都是按照降序排序，因此这里要将ascendSort这个flag给默认设置为true
-          this.sort()
+          that.transactions = JSON.parse(resolve).data
+          that.ascendSort = true //由于每次切换tab默认数据都是按照降序排序，因此这里要将ascendSort这个flag给默认设置为true
+          that.sort()
+          const bottomBarHeight = localStorage.getItem('bottomBarHeight')
+          const topAreaHeight = that.$refs.topArea.clientHeight
+          that.tableHeight = window.innerHeight - bottomBarHeight - topAreaHeight
           }).catch(err=>{
           console.error('获取交易数据失败,错误为', err)
           })
